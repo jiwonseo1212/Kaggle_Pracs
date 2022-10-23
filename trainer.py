@@ -24,7 +24,7 @@ def build_trainer(opt, device_id, model, fields, optim, model_saver=None):
 
     trainer = Trainer(model, train_loss, valid_loss, optim)
     return trainer
-
+  
 class Trainer(object):
     """
     트레이닝 과정을 다루는 클래스
@@ -81,10 +81,6 @@ class Trainer(object):
                 else:
                     traceback.print_exc()
                     raise exc
-
-
-
-
 
 
 

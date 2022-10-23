@@ -1,4 +1,5 @@
 import sys, os
+
 import torch
 import torch.nn as nn
 from monai.networks.nets import densenet
@@ -6,6 +7,8 @@ sys.path.append("/home/ubuntu/sushio/Kaggle_Pracs")
 from models.effnet_model import EffnetModel
 from models.model_saver import ModelSaver
 from utils.optimizers import Optimizer
+from trainer import build_trainer
+from inputters.dynamic_iterator import *
 
 def _get_model_opt(opt, checkpoint=None):
     if checkpoint is not None:
@@ -50,15 +53,27 @@ def build_model_saver(model_opt, opt, model, fields, optim):
                              optim,
                              opt.keep_checkpoint)
     return model_saver
-    
+
+def _build_train_iter(opts, fields, transforms):
+    """
+    Build Traning iterator
+    """
+    train_iter = build_dynamic_dataset_iter(
+        fields, transforms, opts, is_train=True
+    )
+    return train_iter
+
+
 def main(opts, fields):
     model_opt = _get_model_opt(opts)
     model = build_model(model_opt, fields, opts)
     optim = Optimizer.from_opt(model, opts)
     model_saver = build_model_saver(model_opt, opts, model, fields, optim)
     trainer = build_trainer(
-        opt, device_id, model, fields, optim, model_saver=model_saver
+        opts, opts.device_id, model, fields, optim, model_saver=model_saver
     )
+    _train_iter = _build_train_iter(opts, fields)
+    train_iter = IterOnDevice(_train_iter, opts.device_id)
 
 if __name__ == '__main__':
 
